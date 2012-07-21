@@ -18,6 +18,27 @@
 #endif
 
 namespace cdaq {
+	
+class CDAQDATEAPI Date
+{
+ public:
+	/// Create empty Date object with unknown time
+    Date();
+
+    ~Date();
+    
+    /// Converts Date object to string
+    /// \param[in] date_format Format string. For example "%Y-%m-%d %H:%M:%S.%F"
+    /// \return Date string.
+    /// \see http://www.boost.org/doc/libs/1_49_0/doc/html/date_time/date_time_io.html#date_time.format_flags
+    std::string ToString(const std::string &date_format) const;
+    
+	/// Create date object with current time.
+    /// \return Date object with current time.
+    static Date Now();
+ private:
+ private:
+}; //class Date
     
 } //namespace cdaq
 

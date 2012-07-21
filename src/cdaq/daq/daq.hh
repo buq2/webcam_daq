@@ -17,7 +17,97 @@
 #    define CDAQDAQAPI
 #endif
 
+#include <string>
+#include <vector>
+#include <boost/asio.hpp>
+#include <boost/thread.hpp>
+#include <boost/thread/mutex.hpp>
+
+#include "cdaq/misc/daTe.hh"
+
+
 namespace cdaq {
+	
+class CDAQDAQAPI Daq
+{
+ public:
+	/// Create daq object and set connection parameters
+	/// \param[in] com_port Serial port which to connect
+	/// \param[in] hz Sampling rate which will be set to the daq
+	Daq(const std::string &com_port, const int &hz);
+
+	/// Connect to daq and start capturing.
+	/// \return True if conncetion to the daq was successfull
+	// Also starts the capturing thread
+	bool Open();
+	
+	/// Stop capturing
+	void Close();
+ 
+	/// How many channels this daq has
+	static const int kNumberOfChannels = 8;
+	
+	/// Type of the captured values
+	typedef boost::uint16_t ElementType;
+	
+	/// Type of single sample
+	typedef ElementType[kNumberOfChannels] SampleType;
+	
+	/// Get captured data. May return empty vectors and undefined dates
+	/// \param[out] values Captured values
+	/// \param[out] begin Date of the first returned value
+	/// \param[out] end Date of the last returned value
+	void GetBufferedData(std::vector<ElementType> *values, Date *begin, Date *end);
+	
+	/// \return Number of captured  samples
+	size_t NumberOfBufferedSamples() const;
+ private:
+	/// Start capturing. Creates capturing thread
+	void StartCapturing();
+	
+	/// Stops capturing. Capturing thread will be destroyed.
+	void StopCapturing();
+ 
+	/// Data points are captured  in this function. Function should be
+	/// called only by the capturing thread.
+	void CapturingLoop();
+ private:
+	
+	// Serial device string ("COM1", "/dev/ttyUSB0")
+	std::string device_string_;
+	
+	// Sampling rate in HZ
+	int hz_;
+
+	// IO-service which was used to create the serial object
+	boost::asio::io_service io_service_;
+	
+	// Serial device object
+	boost::asio::serial_port device_;
+	
+	// Thread which captures the data from the serial object
+    boost::thread acquisitionThread_;
+	
+	// If true, capturing will be stopped
+	bool stop_capturing_;
+	
+	// How long the capturing thread sleeps after it has processed all 
+	// data from the serial object
+	double capturing_thread_sleep_period_;
+	
+	// Container for captured data points
+	std::vector<ElementType> captured_values_;
+	
+	// Date of the first element of the 'captured_values_'
+	Date date_begin_;
+	
+	// Date of the last element of the 'captured_values_'
+	Date date_end_;
+	
+	// Mutex which protects the captured_values_
+	boost::mutex mutex_data_;
+	
+}; //class Daq
     
 } //namespace cdaq
 
