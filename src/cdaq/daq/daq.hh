@@ -22,6 +22,7 @@
 #include <boost/asio.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
+#include <boost/shared_array.hpp>
 
 #include "cdaq/misc/daTe.hh"
 
@@ -71,6 +72,14 @@ class CDAQDAQAPI Daq
 	/// Data points are captured  in this function. Function should be
 	/// called only by the capturing thread.
 	void CapturingLoop();
+	
+	/// Get raw data from serial device
+	/// \param[out] bytes Number bytes in returned array
+	/// \return Raw data from the serial device
+	boost::shared_array<boost::uint8_t> GetRawSerialData(boost::uint32_t *bytes);
+	
+	/// Fill raw_buffer with new data
+	void FillRawBuffer();
  private:
 	
 	// Serial device string ("COM1", "/dev/ttyUSB0")
@@ -86,7 +95,7 @@ class CDAQDAQAPI Daq
 	boost::asio::serial_port device_;
 	
 	// Thread which captures the data from the serial object
-    boost::thread acquisitionThread_;
+    boost::thread acquisition_thread_;
 	
 	// If true, capturing will be stopped
 	bool stop_capturing_;
@@ -106,6 +115,9 @@ class CDAQDAQAPI Daq
 	
 	// Mutex which protects the captured_values_
 	boost::mutex mutex_data_;
+	
+	// Raw data buffer to which all serial data is captured
+	std::vector<boost::uint8_t> raw_buffer_;
 	
 }; //class Daq
     
