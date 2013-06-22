@@ -15,6 +15,10 @@ Daq::Daq(const std::string &com_port, const int &hz)
     
 }
 
+Daq::~Daq()
+{
+}
+
 bool Daq::Open()
 {
     return true;
@@ -71,7 +75,7 @@ size_t Daq::NumberOfBufferedSamples() const
     return captured_values_.size();
 }
 
-size_t BytesWaiting()
+size_t Daq::BytesWaiting()
 {
     return 0;
 }

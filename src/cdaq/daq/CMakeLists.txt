@@ -11,7 +11,7 @@ INCLUDE_DIRECTORIES(
 ADD_LIBRARY(cdaqDaq ${CDAQ_LIBRARY_TYPE}
     daq.cpp daq.hh
     )
-    
+
 TARGET_LINK_LIBRARIES(cdaqDaq
     ${Boost_FILESYSTEM_LIBRARY}
     ${Boost_SYSTEM_LIBRARY}

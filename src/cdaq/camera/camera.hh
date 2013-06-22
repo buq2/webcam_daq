@@ -4,7 +4,7 @@
 //Macros for exporting/importing functions/etc. These are needed so
 //that we can call certain functions in compiled dll/static library.
 //Define '*_EXPORTS' is added by CMake.
-#if defined (_WIN32) 
+#if !defined(CDAQ_STATIC_LIBRARIES) && defined(_WIN32)
 #    ifdef cdaqCamera_EXPORTS
          //Creating a library, export (make visible)
 #        define CDAQCAMERAAPI __declspec(dllexport)

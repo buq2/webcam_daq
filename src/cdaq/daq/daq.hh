@@ -4,7 +4,7 @@
 //Macros for exporting/importing functions/etc. These are needed so
 //that we can call certain functions in compiled dll/static library.
 //Define '*_EXPORTS' is added by CMake.
-#if defined (_WIN32) 
+#if !defined(CDAQ_STATIC_LIBRARIES) && defined(_WIN32) 
 #    ifdef cdaqDaq_EXPORTS
          //Creating a library, export (make visible)
 #        define CDAQDAQAPI __declspec(dllexport)
@@ -36,6 +36,7 @@ class CDAQDAQAPI Daq
     /// \param[in] com_port Serial port which to connect
     /// \param[in] hz Sampling rate which will be set to the daq
     Daq(const std::string &com_port, const int &hz);
+    ~Daq();
 
     /// Connect to daq and start capturing.
     /// \return True if conncetion to the daq was successfull
