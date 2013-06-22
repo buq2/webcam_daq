@@ -10,13 +10,13 @@ namespace cdaq {
 /// \return OpenCV matrix
 cv::Mat ImageToMat(const Image &img)
 {
-    const int height = img.height();
-    const int width = img.width();
+    const int height = img.Height();
+    const int width = img.Width();
     
     // Always 8bit RGBRGB
     Mat cv_img(Size(width, height), CV_8UC3);
     
-    unsigned char *ptr = img.pointer();
+    unsigned char *ptr = img.Pointer();
     
     for (int y = 0; y < height; ++y) {
         memcpy(cv_img.ptr(y), ptr, width*3);
@@ -35,11 +35,11 @@ Image MatToImage(const cv::Mat &cv_img)
         abort();
     }
     
-    const int height = cv_img.cols;
-    const int width = cv_img.rows;
+    const int height = cv_img.rows;
+    const int width = cv_img.cols;
     
     Image img(width, height);
-    unsigned char *ptr = img.pointer();
+    unsigned char *ptr = img.Pointer();
     
     for (int y = 0; y < height; ++y) {
         memcpy(ptr, cv_img.ptr(y), width*3);

@@ -21,6 +21,8 @@ Camera::~Camera()
     
 Image Camera::GetNextImage()
 {
+    
+    
     Mat frame;
     source_ >> frame;
     timestamp_ = Date::Now();
@@ -30,4 +32,12 @@ Image Camera::GetNextImage()
 Date Camera::GetPreviousTimestamp() const
 {
     return timestamp_;
+}
+
+bool Camera::SetSize(const int &width, const int &height)
+{
+    bool success1 = source_.set(CV_CAP_PROP_FRAME_WIDTH, width);
+    bool success2 = source_.set(CV_CAP_PROP_FRAME_HEIGHT, height);
+    
+    return success1 && success2;
 }

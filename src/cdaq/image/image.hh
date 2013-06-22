@@ -41,17 +41,17 @@ class CDAQIMAGEAPI Image
     ~Image();
     
     /// \return Width of the image in pixels
-    int width() const {return width_;}
+    int Width() const {return width_;}
     
     /// \return Height of the image in pixels
-    int height() const {return height_;}
+    int Height() const {return height_;}
     
     /// \return Buffer size in bytes
     // Number of pixels is multiplied with 3 as there is three channels.
-    unsigned long BufferSize() const {return width()*height()*3;}
+    unsigned long BufferSize() const {return Width()*Height()*3;}
     
     /// \return Pointer to the start of the image buffer
-    unsigned char *pointer() const {return buffer_.get();};
+    unsigned char *Pointer() const {return buffer_.get();};
 
  private:
     //Buffer which contains the image data

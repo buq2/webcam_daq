@@ -37,6 +37,9 @@ class CDAQCAMERAAPI Camera
     /// Get newest image
     Image GetNextImage();
     
+    /// Set capture size
+    bool SetSize(const int &width, const int &height);
+    
     /// Get timestamp of the previously returned image
     Date GetPreviousTimestamp() const;
  private:
