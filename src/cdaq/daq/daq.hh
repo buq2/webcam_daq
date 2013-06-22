@@ -52,7 +52,7 @@ class CDAQDAQAPI Daq
 	typedef boost::uint16_t ElementType;
 	
 	/// Type of single sample
-	typedef ElementType[kNumberOfChannels] SampleType;
+	typedef ElementType SampleType[kNumberOfChannels];
 	
 	/// Get captured data. May return empty vectors and undefined dates
 	/// \param[out] values Captured values
@@ -80,6 +80,8 @@ class CDAQDAQAPI Daq
 	
 	/// Fill raw_buffer with new data
 	void FillRawBuffer();
+
+    size_t BytesWaiting();
  private:
 	
 	// Serial device string ("COM1", "/dev/ttyUSB0")

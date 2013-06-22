@@ -2,7 +2,10 @@
 #include "cdaq/image/image_opencv.hh"
 #include <iostream>
 
-Camera(const int &camera_number)
+using namespace cdaq;
+using namespace cv;
+
+Camera::Camera(const int &camera_number)
     :
     source_(camera_number)
 {
@@ -12,11 +15,11 @@ Camera(const int &camera_number)
     }
 }
     
-~Camera()
+Camera::~Camera()
 {
 }
     
-Image GetNextImage()
+Image Camera::GetNextImage()
 {
     Mat frame;
     source_ >> frame;
@@ -24,7 +27,7 @@ Image GetNextImage()
     return MatToImage(frame);
 }
     
-Date GetPreviousTimestamp() const
+Date Camera::GetPreviousTimestamp() const
 {
     return timestamp_;
 }

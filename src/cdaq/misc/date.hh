@@ -17,12 +17,14 @@
 #    define CDAQDATEAPI
 #endif
 
+#include <string>
+
 namespace cdaq {
-	
+    
 class CDAQDATEAPI Date
 {
  public:
-	/// Create empty Date object with unknown time
+    /// Create empty Date object with unknown time
     Date();
 
     ~Date();
@@ -33,7 +35,7 @@ class CDAQDATEAPI Date
     /// \see http://www.boost.org/doc/libs/1_49_0/doc/html/date_time/date_time_io.html#date_time.format_flags
     std::string ToString(const std::string &date_format) const;
     
-	/// Create date object with current time.
+    /// Create date object with current time.
     /// \return Date object with current time.
     static Date Now();
  private:

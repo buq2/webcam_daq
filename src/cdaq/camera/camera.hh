@@ -19,6 +19,7 @@
 
 #include "cdaq/image/image.hh"
 #include "opencv2/opencv.hpp"
+#include "cdaq/misc/date.hh"
 
 namespace cdaq {
     
@@ -44,7 +45,7 @@ class CDAQCAMERAAPI Camera
     
     // Timestamp of the previous image
     Date timestamp_;
-} //class Camera
+}; //class Camera
     
 } //namespace cdaq
 

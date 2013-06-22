@@ -18,7 +18,7 @@ Image::Image(const unsigned char *data, const int &width, const int &height)
     width_(width),
     height_(height)
 {
-    memcpy(buffer_.get(), data, this->buffer_size());  
+    memcpy(buffer_.get(), data, this->BufferSize());  
 }
 
 Image::~Image()

@@ -10,19 +10,18 @@ Daq::Daq(const std::string &com_port, const int &hz)
 	:
 	device_string_(com_port),
 	hz_(hz),
-	device_(io_service_),
+	device_(io_service_)
 {
 	
 }
 
 bool Daq::Open()
 {
-	
+	return true;
 }
 
 void Daq::Close()
 {
-	
 }
 
 void Daq::StartCapturing()
@@ -63,7 +62,7 @@ void Daq::GetBufferedData(std::vector<ElementType> *values, Date *begin, Date *e
 	
 	boost::mutex::scoped_lock lock(mutex_data_);
 	*begin = date_begin_;
-	*end = data_end_;
+	*end = date_end_;
 	*values = captured_values_;
 }
 	
@@ -72,15 +71,20 @@ size_t Daq::NumberOfBufferedSamples() const
 	return captured_values_.size();
 }
 
+size_t BytesWaiting()
+{
+    return 0;
+}
+
 boost::shared_array<boost::uint8_t> Daq::GetRawSerialData(boost::uint32_t *bytes)
 {
-    *bytes = bytesWaiting();
+    *bytes = BytesWaiting();
     boost::shared_array<boost::uint8_t> readbuf(new boost::uint8_t[*bytes]);
     *bytes = device_.read_some(boost::asio::buffer(&readbuf[0],*bytes));
     return readbuf;
 }
 
-void Daq::FillRawBuffer() const
+void Daq::FillRawBuffer()
 {
 	//Fetch new data from the serial port
 	boost::uint32_t bytes = 0;

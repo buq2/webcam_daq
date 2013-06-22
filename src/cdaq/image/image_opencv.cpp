@@ -18,7 +18,7 @@ cv::Mat ImageToMat(const Image &img)
     
     unsigned char *ptr = img.pointer();
     
-    for (int y = 0; y < height; ++ii) {
+    for (int y = 0; y < height; ++y) {
         memcpy(cv_img.ptr(y), ptr, width*3);
         ptr += width*3;
     }
@@ -41,7 +41,7 @@ Image MatToImage(const cv::Mat &cv_img)
     Image img(width, height);
     unsigned char *ptr = img.pointer();
     
-    for (int y = 0; y < height; ++ii) {
+    for (int y = 0; y < height; ++y) {
         memcpy(ptr, cv_img.ptr(y), width*3);
         ptr += width*3;
     }

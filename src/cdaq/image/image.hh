@@ -51,7 +51,7 @@ class CDAQIMAGEAPI Image
     unsigned long BufferSize() const {return width()*height()*3;}
     
     /// \return Pointer to the start of the image buffer
-    unsigned char pointer() const {return buffer.get()};
+    unsigned char *pointer() const {return buffer_.get();};
 
  private:
     //Buffer which contains the image data

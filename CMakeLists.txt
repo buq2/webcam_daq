@@ -27,21 +27,6 @@ SET(CMAKE_MODULE_PATH
 #Includes CMake module installation.cmake
 INCLUDE(installation)
 
-# #Application needs to be build with /MT(d) flag
-# IF(NOT UNIX)
-#     SET(CMAKE_C_FLAGS_DEBUG "/MTd /Z7 /Od")
-#     SET(CMAKE_C_FLAGS_RELEASE "/MT /O2")
-# ENDIF(NOT UNIX)
-
-#We are using the newest version of boost
-IF(NOT UNIX)
-    #We need to use this definition for some reason:
-    #http://stackoverflow.com/questions/6468681/problem-linking-to-boost-library-with-cmake-generated-project-file-for-msvc9
-    ADD_DEFINITIONS( -DBOOST_ALL_NO_LIB )
-    #Not sure if static library linkage is needed
-    SET(Boost_USE_STATIC_LIBS ON)
-ENDIF(NOT UNIX)
-
 FIND_PACKAGE(Boost REQUIRED)
 INCLUDE_DIRECTORIES(
     ${Boost_INCLUDE_DIRS}
