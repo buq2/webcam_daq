@@ -59,7 +59,8 @@ Daq::Daq(const std::string &com_port, const int &hz)
     device_string_(com_port),
     hz_(hz),
     device_(io_service_),
-    device_open_(false)
+    device_open_(false),
+    capturing_thread_sleep_period_(2.0)
 {
     
 }
@@ -92,6 +93,7 @@ bool Daq::Open()
 
     //Remove unwanted data from serial buffer (there should be none)
     Flush();
+    
 
     //Send configuration message
     boost::asio::write(device_,boost::asio::buffer(confdata,confdata_size));
@@ -133,6 +135,10 @@ bool Daq::CheckConfiguration()
     }
 
     std::cout << "Daq: Configuration successfull" << std::endl;
+    
+    // Add rest of the data to buffer
+    //AddDataToBuffer(ok_ptr, bytes-(&readbuf[0]-ok_ptr));
+    Flush();
 
     //Success
     return true;
@@ -148,9 +154,10 @@ void Daq::StartCapturing()
     
     //Clear captured values and raw buffer, this is the "time" for the
     //first captured value.
-    captured_values_.clear();
+    data_buffer_.clear();
     raw_buffer_.clear();
-    date_begin_ = Date::Now();
+    Flush();
+    date_end_ = Date::Now();
     
     //Create capturing thread
     stop_capturing_ = false;
@@ -165,29 +172,29 @@ void Daq::StopCapturing()
 
 void Daq::CapturingLoop()
 {
-    while (!stop_capturing_) {
-        FillRawBuffer();
+    while (!stop_capturing_) {        
+        date_begin_ = date_end_;
+        while(raw_buffer_.size() < (4+sizeof(ElementType)*kNumberOfChannels)*1000) {
+            FillRawBuffer();
+        }
         ProcessRawBuffer();
-        date_end_ = Date::Now();
     }
 }
 
-void Daq::GetBufferedData(std::vector<ElementType> *values, Date *begin, Date *end)
+void Daq::GetBufferedData(std::vector<DatedSampleType> *values)
 {
-    if (NULL == values || NULL == begin || NULL == end) {
+    if (NULL == values) {
         //Can not do anything
         return;
     }
     
     boost::mutex::scoped_lock lock(mutex_data_);
-    *begin = date_begin_;
-    *end = date_end_;
-    *values = captured_values_;
+    *values = data_buffer_;
 }
     
 size_t Daq::NumberOfBufferedSamples() const
 {
-    return captured_values_.size();
+    return data_buffer_.size();
 }
 
 size_t Daq::BytesWaiting()
@@ -207,8 +214,8 @@ size_t Daq::BytesWaiting()
         //           NULL
         //           );
         // But apparently this does not work. We can also lie and say that
-        // there is always 10kb of data.
-        nbytes = 1024*10;
+        // there is always ~100kb of data.
+        nbytes = 1024*100;
     #else
         ioctl(handle, FIONREAD, (char*)&nbytes);
     #endif
@@ -222,6 +229,7 @@ boost::shared_array<boost::uint8_t> Daq::GetRawSerialData(boost::uint32_t *bytes
     boost::shared_array<boost::uint8_t> readbuf(new boost::uint8_t[*bytes]);
     
     if (0 != *bytes) {
+        date_end_ = Date::Now();
         *bytes = device_.read_some(boost::asio::buffer(&(readbuf[0]),*bytes));
         std::cout << "Number of bytes in serial port: " << *bytes << std::endl;
     }
@@ -234,8 +242,13 @@ void Daq::FillRawBuffer()
     boost::uint32_t bytes = 0;
     
     boost::shared_array<boost::uint8_t> buf = GetRawSerialData(&bytes);
-    for (boost::uint32_t ii = 0; ii < bytes; ++ii) {
-        raw_buffer_.push_back(buf[ii]);
+    AddDataToBuffer(&buf[0], bytes);
+}
+
+void Daq::AddDataToBuffer(boost::uint8_t *ptr, size_t num_bytes)
+{
+    for (boost::uint32_t ii = 0; ii < num_bytes; ++ii) {
+        raw_buffer_.push_back(ptr[ii]);
     }
 }
 
@@ -253,10 +266,11 @@ void Daq::ProcessRawBuffer()
 
     // How many bytes we need to completely transfer all the channels
     // 4 bytes for pattern and rest for the actual data
-    const unsigned int bytes_per_sample = 4 + sizeof(SampleType);
+    const unsigned int bytes_per_sample = 4 + sizeof(ElementType)*kNumberOfChannels;
 
     const size_t total_bytes = raw_buffer_.size();
     boost::uint8_t *last_nonprocessed_byte = &(raw_buffer_[0]);
+    std::vector<SampleType> samples;
     for(size_t ii = 0;ii + bytes_per_sample < total_bytes; ii += bytes_per_sample) {
         const boost::uint8_t *first_data_byte = &(raw_buffer_[ii+4]);
         // For each channel
@@ -267,13 +281,30 @@ void Daq::ProcessRawBuffer()
             elem = DaqRawToNative(elem);
             sample[chan] = elem;
         }
-        data_buffer_.push_back(sample);
+        samples.push_back(sample);
         last_nonprocessed_byte += bytes_per_sample;
     }
     
     // Now erase all data which was processed
     const size_t num_processed = last_nonprocessed_byte-&(raw_buffer_[0]);
     raw_buffer_.erase(raw_buffer_.begin(), raw_buffer_.begin()+num_processed);
+    
+    
+    // Finally get date codes for all samples
+    // Begin date is clear
+    // For (hopefully) more accurate end date we need to take into
+    // account that the date_end_ is for date for the next sample
+    const double micros_between_samples = (date_end_.Microseconds() - date_begin_.Microseconds())/(double)samples.size();
+    std::cout << micros_between_samples << std::endl;
+    for (size_t ii = 0; ii < samples.size(); ++ii) {
+        Date sample_date = date_begin_;
+        sample_date.AddMicroseconds(micros_between_samples * ii);
+        
+        DatedSampleType s;
+        s.get<0>() = sample_date;
+        s.get<1>() = samples[ii];
+        data_buffer_.push_back(s);
+    }
 }
 
 void Daq::Flush()

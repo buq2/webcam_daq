@@ -24,6 +24,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_array.hpp>
 #include <boost/array.hpp>
+#include <boost/tuple/tuple.hpp>
 
 #include "cdaq/misc/daTe.hh"
 
@@ -62,11 +63,12 @@ class CDAQDAQAPI Daq
     /// Type of single sample
     typedef boost::array<ElementType, kNumberOfChannels> SampleType;
     
+    /// Type of single sample with date code
+    typedef boost::tuple<Date, SampleType> DatedSampleType;
+    
     /// Get captured data. May return empty vectors and undefined dates
-    /// \param[out] values Captured values
-    /// \param[out] begin Date of the first returned value
-    /// \param[out] end Date of the last returned value
-    void GetBufferedData(std::vector<ElementType> *values, Date *begin, Date *end);
+    /// \param[out] values Captured values with date
+    void GetBufferedData(std::vector<DatedSampleType> *values);
     
     /// \return Number of captured  samples
     size_t NumberOfBufferedSamples() const;
@@ -102,6 +104,9 @@ class CDAQDAQAPI Daq
     
     /// Transform raw bytes from the daq to correct byte order
     ElementType DaqRawToNative(const ElementType &elem);
+    
+    /// Add data to raw buffer
+    void AddDataToBuffer(boost::uint8_t *ptr, size_t num_bytes);
  private:
 
     
@@ -130,13 +135,10 @@ class CDAQDAQAPI Daq
     // data from the serial object
     double capturing_thread_sleep_period_;
     
-    // Container for captured data points
-    std::vector<ElementType> captured_values_;
-    
-    // Date of the first element of the 'captured_values_'
+    // Date of the first element of the 'raw_buffer_'
     Date date_begin_;
     
-    // Date of the last element of the 'captured_values_'
+    // Approx date of the last element of the 'raw_buffer_'
     Date date_end_;
     
     // Mutex which protects the captured_values_
@@ -146,7 +148,7 @@ class CDAQDAQAPI Daq
     std::vector<boost::uint8_t> raw_buffer_;
     
     // Ready samples
-    std::vector<SampleType> data_buffer_;
+    std::vector<DatedSampleType> data_buffer_;
     
 }; //class Daq
     
