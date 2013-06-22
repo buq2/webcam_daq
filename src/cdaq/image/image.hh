@@ -17,7 +17,8 @@
 #    define CDAQIMAGEAPI
 #endif
 
-#include <boost/shared_array.hpp>
+#include "opencv2/opencv.hpp"
+#include "cdaq/misc/date.hh"
 
 namespace cdaq {
     
@@ -31,11 +32,8 @@ class CDAQIMAGEAPI Image
     /// \param[in] height Height of the image in pixels
     Image(const int &width, const int &height);
     
-    /// Create image from buffer. Data will be copied
-    /// \param[in] buffer Buffer from which the data should be copied
-    /// \param[in] width Width of the image in pixels
-    /// \param[in] height Height of the image in pixels
-    Image(const unsigned char *buffer, const int &width, const int &height);
+    /// Create image from OpenCV data
+    Image(cv::Mat mat);
     
     /// Destructor
     ~Image();
@@ -46,22 +44,29 @@ class CDAQIMAGEAPI Image
     /// \return Height of the image in pixels
     int Height() const {return height_;}
     
-    /// \return Buffer size in bytes
-    // Number of pixels is multiplied with 3 as there is three channels.
-    unsigned long BufferSize() const {return Width()*Height()*3;}
+    void WriteWithTimestamp(const std::string &folder, const std::string &tag, const std::string &extension);
     
-    /// \return Pointer to the start of the image buffer
-    unsigned char *Pointer() const {return buffer_.get();};
-
+    void SetDate(const Date &date)
+    {
+        date_ = date;
+    }
+    
+    Date GetDate() const
+    {
+        return date_;
+    }
  private:
     //Buffer which contains the image data
-    boost::shared_array<unsigned char> buffer_;
+    cv::Mat buffer_;
     
     //Width of the image
     int width_;
     
     //Height of the image
     int height_;
+    
+    // Date of the image
+    Date date_;
 }; //class Image
 
 } //namespace cdaq

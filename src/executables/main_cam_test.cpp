@@ -39,6 +39,7 @@ int main(int argc, char *argv[])
     Image img = cam.GetNextImage();
     std::cout << img.Width() << std::endl;
     std::cout << img.Height() << std::endl;
+    img.WriteWithTimestamp("imgs", "test", "tif");
 
     boost::this_thread::sleep(boost::posix_time::millisec(static_cast<boost::int64_t>(1000*3)));
     

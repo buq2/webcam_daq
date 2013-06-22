@@ -39,15 +39,9 @@ class CDAQCAMERAAPI Camera
     
     /// Set capture size
     bool SetSize(const int &width, const int &height);
-    
-    /// Get timestamp of the previously returned image
-    Date GetPreviousTimestamp() const;
  private:
     // Video source from which to capture the image
     cv::VideoCapture source_;
-    
-    // Timestamp of the previous image
-    Date timestamp_;
 }; //class Camera
     
 } //namespace cdaq

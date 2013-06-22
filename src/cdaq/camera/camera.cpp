@@ -1,5 +1,4 @@
 #include "cdaq/camera/camera.hh"
-#include "cdaq/image/image_opencv.hh"
 #include <iostream>
 
 using namespace cdaq;
@@ -21,19 +20,14 @@ Camera::~Camera()
     
 Image Camera::GetNextImage()
 {
-    
-    
     Mat frame;
     source_ >> frame;
-    timestamp_ = Date::Now();
-    return MatToImage(frame);
+    const Date timestamp = Date::Now();
+    Image img(frame);
+    img.SetDate(timestamp);
+    return img;
 }
     
-Date Camera::GetPreviousTimestamp() const
-{
-    return timestamp_;
-}
-
 bool Camera::SetSize(const int &width, const int &height)
 {
     bool success1 = source_.set(CV_CAP_PROP_FRAME_WIDTH, width);
