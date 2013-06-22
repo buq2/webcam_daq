@@ -18,6 +18,7 @@
 #endif
 
 #include "cdaq/image/image.hh"
+#include "cdaq/image/image_writer.hh"
 #include "opencv2/opencv.hpp"
 #include "cdaq/misc/date.hh"
 
@@ -34,14 +35,20 @@ class CDAQCAMERAAPI Camera
     /// Destructor
     ~Camera();
     
-    /// Get newest image
+    /// Get newest image and send it to ImageWriter
     Image GetNextImage();
     
     /// Set capture size
     bool SetSize(const int &width, const int &height);
+    
+    /// Get image writer which saves the images
+    ImageWriter *GetImageWriter();
  private:
     // Video source from which to capture the image
     cv::VideoCapture source_;
+    
+    // Image writer which is used to save the images
+    ImageWriter writer_;
 }; //class Camera
     
 } //namespace cdaq

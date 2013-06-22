@@ -27,6 +27,10 @@ namespace cdaq {
 class CDAQIMAGEAPI Image
 {
  public:
+    Image()
+    {
+    }
+    
     /// Create empty image
     /// \param[in] width Width of the image in pixels
     /// \param[in] height Height of the image in pixels

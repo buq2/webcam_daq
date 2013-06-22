@@ -10,6 +10,7 @@ INCLUDE_DIRECTORIES(
 
 ADD_LIBRARY(cdaqImage ${CDAQ_LIBRARY_TYPE}
     image.cpp image.hh
+    image_writer.cpp image_writer.cpp
     )
     
 TARGET_LINK_LIBRARIES(cdaqImage
