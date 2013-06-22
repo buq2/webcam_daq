@@ -23,6 +23,7 @@
 #include <boost/thread.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/shared_array.hpp>
+#include <boost/array.hpp>
 
 #include "cdaq/misc/daTe.hh"
 
@@ -43,6 +44,12 @@ class CDAQDAQAPI Daq
     // Also starts the capturing thread
     bool Open();
     
+    /// \return True if open
+    bool IsOpen()
+    {
+        return device_open_;
+    }
+    
     /// Stop capturing
     void Close();
  
@@ -53,7 +60,7 @@ class CDAQDAQAPI Daq
     typedef boost::uint16_t ElementType;
     
     /// Type of single sample
-    typedef ElementType SampleType[kNumberOfChannels];
+    typedef boost::array<ElementType, kNumberOfChannels> SampleType;
     
     /// Get captured data. May return empty vectors and undefined dates
     /// \param[out] values Captured values
@@ -63,12 +70,19 @@ class CDAQDAQAPI Daq
     
     /// \return Number of captured  samples
     size_t NumberOfBufferedSamples() const;
- private:
+    
     /// Start capturing. Creates capturing thread
     void StartCapturing();
     
     /// Stops capturing. Capturing thread will be destroyed.
     void StopCapturing();
+    
+    /// \return True if Daq configured successfully. Must be called after
+    ///     configuration message has been sent.
+    bool CheckConfiguration();
+ private:
+    /// Flush serial port data
+    void Flush();
  
     /// Data points are captured  in this function. Function should be
     /// called only by the capturing thread.
@@ -83,13 +97,22 @@ class CDAQDAQAPI Daq
     void FillRawBuffer();
 
     size_t BytesWaiting();
+    
+    void ProcessRawBuffer();
+    
+    /// Transform raw bytes from the daq to correct byte order
+    ElementType DaqRawToNative(const ElementType &elem);
  private:
+
     
     // Serial device string ("COM1", "/dev/ttyUSB0")
     std::string device_string_;
     
     // Sampling rate in HZ
     int hz_;
+    
+    // True if device has been opened
+    bool device_open_;
 
     // IO-service which was used to create the serial object
     boost::asio::io_service io_service_;
@@ -121,6 +144,9 @@ class CDAQDAQAPI Daq
     
     // Raw data buffer to which all serial data is captured
     std::vector<boost::uint8_t> raw_buffer_;
+    
+    // Ready samples
+    std::vector<SampleType> data_buffer_;
     
 }; //class Daq
     
