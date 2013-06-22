@@ -92,8 +92,7 @@ bool Daq::Open()
     memcpy(&confdata[5], &hz16, 2);
 
     //Remove unwanted data from serial buffer (there should be none)
-    Flush();
-    
+    Flush();   
 
     //Send configuration message
     boost::asio::write(device_,boost::asio::buffer(confdata,confdata_size));
@@ -152,13 +151,6 @@ void Daq::StartCapturing()
 {
     StopCapturing();
     
-    //Clear captured values and raw buffer, this is the "time" for the
-    //first captured value.
-    data_buffer_.clear();
-    raw_buffer_.clear();
-    Flush();
-    date_end_ = Date::Now();
-    
     //Create capturing thread
     stop_capturing_ = false;
     acquisition_thread_ = boost::thread(boost::bind(&Daq::CapturingLoop, this));
@@ -172,9 +164,15 @@ void Daq::StopCapturing()
 
 void Daq::CapturingLoop()
 {
+    //Clear captured values and raw buffer, this is the "time" for the
+    //first captured value.
+    data_buffer_.clear();
+    raw_buffer_.clear();
+    Flush();
+    
     while (!stop_capturing_) {        
         date_begin_ = date_end_;
-        while(raw_buffer_.size() < (4+sizeof(ElementType)*kNumberOfChannels)*1000) {
+        while(raw_buffer_.size() < (4+sizeof(ElementType)*kNumberOfChannels)*capturing_thread_sleep_period_*kNumberOfChannels) {
             FillRawBuffer();
         }
         ProcessRawBuffer();
@@ -231,7 +229,6 @@ boost::shared_array<boost::uint8_t> Daq::GetRawSerialData(boost::uint32_t *bytes
     if (0 != *bytes) {
         date_end_ = Date::Now();
         *bytes = device_.read_some(boost::asio::buffer(&(readbuf[0]),*bytes));
-        std::cout << "Number of bytes in serial port: " << *bytes << std::endl;
     }
     return readbuf;
 }

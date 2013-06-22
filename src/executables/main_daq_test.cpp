@@ -1,5 +1,6 @@
 #include <boost/lexical_cast.hpp>
 #include "cdaq/daq/daq.hh"
+#include "cdaq/daq/data_to_csv.hh"
 #include <iostream>
 #include <string>
 #include <boost/thread.hpp>
@@ -28,8 +29,14 @@ int main(int argc, char *argv[])
     daq.Open();
     daq.StartCapturing();
     
-    boost::this_thread::sleep(boost::posix_time::millisec(static_cast<boost::int64_t>(1000*1)));
+    boost::this_thread::sleep(boost::posix_time::millisec(static_cast<boost::int64_t>(1000*3)));
     daq.StopCapturing();
+    
+    std::vector<Daq::DatedSampleType> samples;
+    daq.GetBufferedData(&samples);
+    
+    DataToCsv out("out.csv");
+    out.AddData(samples);
     
     return 0;
 }

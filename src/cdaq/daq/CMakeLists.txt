@@ -10,6 +10,7 @@ INCLUDE_DIRECTORIES(
 
 ADD_LIBRARY(cdaqDaq ${CDAQ_LIBRARY_TYPE}
     daq.cpp daq.hh
+    data_to_csv.hh
     )
 
 TARGET_LINK_LIBRARIES(cdaqDaq
