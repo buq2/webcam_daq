@@ -67,6 +67,7 @@ Daq::Daq(const std::string &com_port, const int &hz)
 
 Daq::~Daq()
 {
+    StopCapturing();
 }
 
 bool Daq::Open()
@@ -166,13 +167,16 @@ void Daq::CapturingLoop()
 {
     //Clear captured values and raw buffer, this is the "time" for the
     //first captured value.
-    data_buffer_.clear();
+    {
+        boost::mutex::scoped_lock lock(mutex_data_);
+        data_buffer_.clear();
+    }
     raw_buffer_.clear();
     Flush();
     
     while (!stop_capturing_) {        
         date_begin_ = date_end_;
-        while(raw_buffer_.size() < (4+sizeof(ElementType)*kNumberOfChannels)*capturing_thread_sleep_period_*kNumberOfChannels) {
+        while(!stop_capturing_ && raw_buffer_.size() < (4+sizeof(ElementType)*kNumberOfChannels)*capturing_thread_sleep_period_*kNumberOfChannels) {
             FillRawBuffer();
         }
         ProcessRawBuffer();
@@ -201,8 +205,9 @@ void Daq::GetBufferedDataAndClear(std::vector<DatedSampleType> *values)
     data_buffer_.clear();
 }
     
-size_t Daq::NumberOfBufferedSamples() const
+size_t Daq::NumberOfBufferedSamples()
 {
+    boost::mutex::scoped_lock lock(mutex_data_);
     return data_buffer_.size();
 }
 
@@ -288,6 +293,7 @@ void Daq::ProcessRawBuffer()
             memcpy(&elem, first_data_byte, sizeof(elem));
             elem = DaqRawToNative(elem);
             sample[chan] = elem;
+            first_data_byte += sizeof(ElementType);
         }
         samples.push_back(sample);
         last_nonprocessed_byte += bytes_per_sample;
@@ -304,6 +310,7 @@ void Daq::ProcessRawBuffer()
     // account that the date_end_ is for date for the next sample
     const double micros_between_samples = (date_end_.Microseconds() - date_begin_.Microseconds())/(double)samples.size();
     std::cout << micros_between_samples << std::endl;
+    std::vector<DatedSampleType> data_buffer_new_data;
     for (size_t ii = 0; ii < samples.size(); ++ii) {
         Date sample_date = date_begin_;
         sample_date.AddMicroseconds(micros_between_samples * ii);
@@ -311,8 +318,11 @@ void Daq::ProcessRawBuffer()
         DatedSampleType s;
         s.get<0>() = sample_date;
         s.get<1>() = samples[ii];
-        data_buffer_.push_back(s);
+        data_buffer_new_data.push_back(s);
     }
+
+    boost::mutex::scoped_lock lock(mutex_data_);
+    data_buffer_.insert(data_buffer_.end(), data_buffer_new_data.begin(), data_buffer_new_data.end());
 }
 
 void Daq::Flush()

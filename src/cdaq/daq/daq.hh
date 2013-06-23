@@ -76,7 +76,7 @@ class CDAQDAQAPI Daq
     void GetBufferedDataAndClear(std::vector<DatedSampleType> *values);
     
     /// \return Number of captured  samples
-    size_t NumberOfBufferedSamples() const;
+    size_t NumberOfBufferedSamples();
     
     /// Start capturing. Creates capturing thread
     void StartCapturing();
