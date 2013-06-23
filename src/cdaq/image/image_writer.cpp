@@ -21,6 +21,9 @@ ImageWriter::~ImageWriter()
 
 void ImageWriter::AddImage(const Image &img)
 {
+    if (!queue_images_) {
+        return;
+    }
     boost::mutex::scoped_lock lock(mutex_images_);
     images_.push(img);
 }

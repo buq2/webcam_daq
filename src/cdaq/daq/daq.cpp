@@ -77,7 +77,13 @@ bool Daq::Open()
         return true;
     }
     
-    device_.open(device_string_);
+    try {
+        device_.open(device_string_);
+    } catch (...) {
+        std::cerr << "Failed to open serial port: " << device_string_ << std::endl;
+        return false;
+    }
+
     device_.set_option(boost::asio::serial_port_base::baud_rate(230400));
     device_.set_option(boost::asio::serial_port_base::character_size(8));
     device_.set_option(boost::asio::serial_port_base::flow_control( boost::asio::serial_port_base::flow_control::none));
@@ -150,6 +156,10 @@ void Daq::Close()
 
 void Daq::StartCapturing()
 {
+    if (!device_.is_open()) {
+        std::cerr << "Tried to start capturing, but serial port is not open" << std::endl;
+        return;
+    }
     StopCapturing();
     
     //Create capturing thread

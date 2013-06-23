@@ -13,11 +13,28 @@ class CDAQDAQAPI DataToCsv
  public:
     DataToCsv(const std::string &outfname)
     {
+        Open(outfname);
+    }
+    DataToCsv()
+    {
+    }
+    
+    void Open(const std::string &outfname)
+    {
+        if (file_.is_open()) {
+            Close();
+        }
         file_.open(outfname);
     }
-    ~DataToCsv()
+    
+    void Close()
     {
         file_.close();
+    }
+    
+    ~DataToCsv()
+    {
+        Close();
     }
     
     template<typename T>
@@ -26,21 +43,9 @@ class CDAQDAQAPI DataToCsv
         file_ << data;
         // Make sure data is written -> if program is forcibly closed
         // at least some of the data will remain
+        // Slow, but, but...
         file_.flush(); 
     }
-    
-    void AddData(const char *data) 
-    {
-        AddData(std::string(data));
-    }
-    
-    /*
-    void AddData(const char &data) 
-    {
-
-        AddData(std::string(data));
-    }
-    */
     
     template <typename SampleT>
     void AddData(const boost::tuple<Date, SampleT> &data)

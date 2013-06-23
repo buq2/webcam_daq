@@ -59,6 +59,11 @@ class CDAQIMAGEAPI Image
     {
         return date_;
     }
+    
+    cv::Mat ToOpencvImage()
+    {
+        return buffer_;
+    }
  private:
     //Buffer which contains the image data
     cv::Mat buffer_;
