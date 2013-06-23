@@ -24,6 +24,9 @@ class CDAQDAQAPI DataToCsv
     void AddData(const T &data)
     {
         file_ << data;
+        // Make sure data is written -> if program is forcibly closed
+        // at least some of the data will remain
+        file_.flush(); 
     }
     
     void AddData(const char *data) 

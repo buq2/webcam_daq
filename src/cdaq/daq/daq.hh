@@ -66,9 +66,14 @@ class CDAQDAQAPI Daq
     /// Type of single sample with date code
     typedef boost::tuple<Date, SampleType> DatedSampleType;
     
-    /// Get captured data. May return empty vectors and undefined dates
+    /// Get captured data. Note that buffers are not cleared
     /// \param[out] values Captured values with date
     void GetBufferedData(std::vector<DatedSampleType> *values);
+    
+    /// Get captured data and clear buffers such that next time the function
+    /// is called no overlapping data is returned
+    /// \param[out] values Captured values with date
+    void GetBufferedDataAndClear(std::vector<DatedSampleType> *values);
     
     /// \return Number of captured  samples
     size_t NumberOfBufferedSamples() const;

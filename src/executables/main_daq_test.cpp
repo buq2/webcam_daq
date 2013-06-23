@@ -9,13 +9,14 @@ using namespace cdaq;
 
 int main(int argc, char *argv[])
 {
-    if (argc < 2) {
-        std::cerr << "Required two inputs <port>, <hz>" << std::endl;
+    if (argc < 3) {
+        std::cerr << "Required three inputs <port>, <hz>, <outfname>" << std::endl;
         return -1;
     }
     
     const std::string port = argv[1];
     const std::string hz_str = argv[2];
+    const std::string fname = argv[3];
     
     int hz = 0;
     try {
@@ -29,14 +30,16 @@ int main(int argc, char *argv[])
     daq.Open();
     daq.StartCapturing();
     
-    boost::this_thread::sleep(boost::posix_time::millisec(static_cast<boost::int64_t>(1000*3)));
-    daq.StopCapturing();
+    DataToCsv out(fname);
     
-    std::vector<Daq::DatedSampleType> samples;
-    daq.GetBufferedData(&samples);
+    while(true) {
+        boost::this_thread::sleep(boost::posix_time::millisec(static_cast<boost::int64_t>(1000*1)));
+        std::vector<Daq::DatedSampleType> samples;
+        daq.GetBufferedDataAndClear(&samples);
+        out.AddData(samples);
+    }
     
-    DataToCsv out("out.csv");
-    out.AddData(samples);
+    //daq.StopCapturing();
     
     return 0;
 }

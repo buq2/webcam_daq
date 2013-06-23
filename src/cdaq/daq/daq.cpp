@@ -189,6 +189,17 @@ void Daq::GetBufferedData(std::vector<DatedSampleType> *values)
     boost::mutex::scoped_lock lock(mutex_data_);
     *values = data_buffer_;
 }
+
+void Daq::GetBufferedDataAndClear(std::vector<DatedSampleType> *values)
+{
+    if (NULL == values) {
+        //Can not do anything
+        return;
+    }
+    boost::mutex::scoped_lock lock(mutex_data_);
+    *values = data_buffer_;
+    data_buffer_.clear();
+}
     
 size_t Daq::NumberOfBufferedSamples() const
 {
